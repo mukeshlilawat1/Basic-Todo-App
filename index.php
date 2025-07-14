@@ -1,5 +1,6 @@
  <?php
-  // INSERT INTO ``notes` (`sno`, `title`, `description`, `Time`) VALUES (NULL, '',current_timestamp())
+
+  $insert = false;
   //  connect to the database
   $servername = "localhost";
   $username = "root";
@@ -10,6 +11,21 @@
 
   if (!$conn) {
     die("Sorry we failed to connect. " . mysqli_connect_error());
+  }
+  // echo $_SERVER['REQUEST_METHOD'];
+
+  if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    $title = $_POST["title"];
+    $description = $_POST["description"];
+
+    $sql = "INSERT INTO `notes` (`title`, `description`) VALUES ('$title', '$description')";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result) {
+      $insert = true;
+    } else {
+      echo "the record was not inserted successfully beacause of this error --> " . mysqli_error();
+    }
   }
   ?>
 
@@ -28,10 +44,37 @@
    <title>Basic-Todo-App</title>
    <link rel="icon" type="image/png" href="pngimg.com - php_PNG34.png">
 
+   <link rel="stylesheet" href="//cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
 
  </head>
 
  <body>
+   <!-- Button trigger modal -->
+   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#staticBackdrop">
+     Launch static backdrop modal
+   </button>
+
+   <!-- Modal -->
+   <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+     <div class="modal-dialog">
+       <div class="modal-content">
+         <div class="modal-header">
+           <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+             <span aria-hidden="true">&times;</span>
+           </button>
+         </div>
+         <div class="modal-body">
+           ...
+         </div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+           <button type="button" class="btn btn-primary">Understood</button>
+         </div>
+       </div>
+     </div>
+   </div>
+
    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
      <a class="navbar-brand" href="#"><img src="to-do-list.png" alt="php logo" height="40" width="40" /></a>
      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,39 +121,89 @@
      </div>
    </nav>
 
+   <?php
+    if ($insert) {
+      echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+  <strong>Success!</strong> Your Todo Has Been inserted Successfully
+  <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+    <span aria-hidden='true'>&times;</span>
+  </button>
+</div>";
+    }
+    ?>
+
    <div class="container my-2">
      <h3>Add Your Task</h3>
-     <form>
+     <form action="/Crud/index.php" method="POST">
        <div class="form-group">
-         <label for="exampleInputEmail1"> Todo Task</label>
-         <input type="text" class="form-control" id="todo" name="todo" aria-describedby="emailHelp">
+         <label for="title"> Todo Task</label>
+         <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp">
        </div>
        <div class="form-group">
          <label for="desc">Todo Description</label>
-         <textarea class="form-control" id="desc" name="desc" rows="3"></textarea>
+         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
        </div>
        <button type="submit" class="btn btn-primary">Add Todo</button>
      </form>
    </div>
 
-   <div class="container">
-     <?php
-      $sql = "SELECT * FROM `notes`";
-      $result = mysqli_query($conn, $sql);
+   <div class="container my-4">
+     <table class="table" id="myTable">
+       <thead>
+         <tr>
+           <th scope="col">S-No</th>
+           <th scope="col">Title</th>
+           <th scope="col">Description</th>
+           <th scope="col">Action</th>
+         </tr>
+       </thead>
+       <tbody>
 
-      while ($row = mysqli_fetch_assoc($result)) {
-        echo $row['sno'] . ". Title ". $row['title'] . "Description is ". $row['description'];
-        echo "<br>";
-      }
-      ?>
+         <?php
+          $sql = "SELECT * FROM `notes`";
+          $result = mysqli_query($conn, $sql);
+          $sno = 0;
+          while ($row = mysqli_fetch_assoc($result)) {
+            $sno = $sno + 1;
+            echo "
+            <tr>
+           <th scope='row'>" . $sno . "</th>
+           <td>" . $row['title'] . "</td>
+           <td>" . $row['description'] . "</td>
+           <td> <a href='/del'>Delete</a> <button class='edit btn btn-sm btn-primary'>Edit</button></td>
+         </tr>
+        ";
+            // echo $row['sno'] . ". Title " . $row['title'] . "Description is " . $row['description'];
+            // echo "<br>";
+          }
+
+
+          ?>
+       </tbody>
+     </table>
    </div>
 
-
+   <hr />
    <!-- Optional JavaScript; choose one of the two! -->
 
    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+   <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+   <script src="//cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+
+   <script>
+     let table = new DataTable('#myTable');
+   </script>
+
+   <script>
+     edits = document.getElementsByClassName('edit');
+     Array.from(edits).forEach(element => {
+       element.addEventListener("click", (e) => {
+         console.log("edit", e.target);
+       });
+     });
+   </script>
 
    <!-- Option 2: Separate Popper and Bootstrap JS -->
    <!--
