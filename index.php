@@ -1,6 +1,8 @@
  <?php
 
   $insert = false;
+  $update = false;
+  $delete = false;
   //  connect to the database
   $servername = "localhost";
   $username = "root";
@@ -13,18 +15,49 @@
     die("Sorry we failed to connect. " . mysqli_connect_error());
   }
   // echo $_SERVER['REQUEST_METHOD'];
+  // echo $_POST['snoEdit'];
+  // echo $_GET['update'];
+  // exit();
+
+
+  if (isset($_GET['delete'])) {
+    $sno = $_GET['delete'];
+    echo $sno;
+    $delete = true;
+    $sql = "DELETE FROM `notes` WHERE `sno` =  $sno";
+    $result = mysqli_query($conn, $sql);
+  }
 
   if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    $title = $_POST["title"];
-    $description = $_POST["description"];
 
-    $sql = "INSERT INTO `notes` (`title`, `description`) VALUES ('$title', '$description')";
-    $result = mysqli_query($conn, $sql);
+    if (isset($_POST['snoEdit'])) {
+      echo "Yes";
+      // udpate the records
+      $sno = $_POST['snoEdit'];
+      $title = $_POST['title'];
+      $description = $_POST["description"];
 
-    if ($result) {
-      $insert = true;
+      // sql query to be executed
+      $sql = "UPDATE `notes` SET `title`= '$title' , `description` = '$description'  WHERE `notes`.`sno` = $sno ";
+      $result = mysqli_query($conn, $sql);
+
+      if ($result) {
+        $update = true;
+      } else {
+        echo "we could not update the record successfully";
+      }
     } else {
-      echo "the record was not inserted successfully beacause of this error --> " . mysqli_error();
+      $title = $_POST["title"];
+      $description = $_POST["description"];
+
+      $sql = "INSERT INTO `notes` (`title`, `description`) VALUES ('$title', '$description')";
+      $result = mysqli_query($conn, $sql);
+
+      if ($result) {
+        $insert = true;
+      } else {
+        echo "the record was not inserted successfully beacause of this error --> " . mysqli_error();
+      }
     }
   }
   ?>
@@ -50,22 +83,34 @@
 
  <body>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#staticBackdrop">
+   <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#staticBackdrop">
      Launch static backdrop modal
-   </button>
+   </button> -->
 
-   <!-- Modal -->
-   <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+   <!-- Corrected Modal -->
+   <div class="modal fade" id="editModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
      <div class="modal-dialog">
        <div class="modal-content">
          <div class="modal-header">
-           <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+           <!-- Fix this ID -->
+           <h5 class="modal-title" id="editModalLabel">Edit Todo</h5>
            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
              <span aria-hidden="true">&times;</span>
            </button>
          </div>
          <div class="modal-body">
-           ...
+           <form action="/Crud/index.php" method="POST">
+             <input type="hidden" name="snoEdit" id="snoEdit">
+             <div class="form-group">
+               <label for="title">Todo Task</label>
+               <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp">
+             </div>
+             <div class="form-group">
+               <label for="desc">Todo Description</label>
+               <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+             </div>
+             <button type="submit" class="btn btn-primary">Update Todo</button>
+           </form>
          </div>
          <div class="modal-footer">
            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -74,6 +119,7 @@
        </div>
      </div>
    </div>
+
 
    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
      <a class="navbar-brand" href="#"><img src="to-do-list.png" alt="php logo" height="40" width="40" /></a>
@@ -132,7 +178,29 @@
     }
     ?>
 
-   <div class="container my-2">
+   <?php
+    if ($delete) {
+      echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+  <strong>Success!</strong> Your Todo Has Been deleted Successfully
+  <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+    <span aria-hidden='true'>&times;</span>
+  </button>
+</div>";
+    }
+    ?>
+
+   <?php
+    if ($update) {
+      echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+  <strong>Success!</strong> Your Todo Has Been updated Successfully
+  <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+    <span aria-hidden='true'>&times;</span>
+  </button>
+</div>";
+    }
+    ?>
+
+   <div class="container my-4">
      <h3>Add Your Task</h3>
      <form action="/Crud/index.php" method="POST">
        <div class="form-group">
@@ -170,7 +238,7 @@
            <th scope='row'>" . $sno . "</th>
            <td>" . $row['title'] . "</td>
            <td>" . $row['description'] . "</td>
-           <td> <a href='/del'>Delete</a> <button class='edit btn btn-sm btn-primary'>Edit</button></td>
+           <td> <button class='delete btn btn-sm btn-primary' id=d" . $row['sno'] . ">Delete</button> <button class='edit btn btn-sm btn-primary' id=" . $row['sno'] . ">Edit</button></td>
          </tr>
         ";
             // echo $row['sno'] . ". Title " . $row['title'] . "Description is " . $row['description'];
@@ -188,22 +256,15 @@
 
    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
    <script src="//cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
 
    <script>
      let table = new DataTable('#myTable');
    </script>
 
-   <script>
-     edits = document.getElementsByClassName('edit');
-     Array.from(edits).forEach(element => {
-       element.addEventListener("click", (e) => {
-         console.log("edit", e.target);
-       });
-     });
-   </script>
+   <script src="App.js"></script>
 
    <!-- Option 2: Separate Popper and Bootstrap JS -->
    <!--
