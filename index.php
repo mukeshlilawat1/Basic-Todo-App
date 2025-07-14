@@ -98,8 +98,8 @@
              <span aria-hidden="true">&times;</span>
            </button>
          </div>
-         <div class="modal-body">
-           <form action="/Crud/index.php" method="POST">
+         <form action="/Crud/index.php" method="POST">
+           <div class="modal-body">
              <input type="hidden" name="snoEdit" id="snoEdit">
              <div class="form-group">
                <label for="title">Todo Task</label>
@@ -110,12 +110,12 @@
                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
              </div>
              <button type="submit" class="btn btn-primary">Update Todo</button>
-           </form>
-         </div>
-         <div class="modal-footer">
-           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-           <button type="button" class="btn btn-primary">Understood</button>
-         </div>
+           </div>
+           <div class="modal-footer">
+             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+             <button type="button" class="btn btn-primary">Understood</button>
+           </div>
+         </form>
        </div>
      </div>
    </div>
