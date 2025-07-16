@@ -12,6 +12,7 @@ Array.from(edits).forEach(element => {
         titleEdit.value = title;
         descriptionEdit.value = description;
 
+        let snoEdit = document.getElementById("snoEdit");
         snoEdit.value = e.target.id;
 
         console.log(e.target.id)
@@ -29,7 +30,7 @@ Array.from(deletes).forEach(element => {
 
         if (confirm("Are You Sure you want to delete this Todo")) {
             console.log("Yes");
-            window.location = `/Crud/index.php?delete=${no}`;
+            window.location = `index.php?delete=${no}`;
             // create a from and use post request to submit a form
         } else {
             console.log("no");
